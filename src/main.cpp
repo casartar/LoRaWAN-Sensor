@@ -44,6 +44,10 @@
 //CayenneLPP
 #include <CayenneLPP.h>
 
+// OLED
+//#include <U8x8lib.h>
+#include <U8g2lib.h>
+
 #include "defines.h"
 
 // This EUI must be in little-endian format, so least-significant-byte
@@ -85,6 +89,14 @@ const lmic_pinmap lmic_pins = {
 Adafruit_BME280 bme(I2C_SDA, I2C_SCL);
 
 CayenneLPP lpp(51);
+
+// OLED Pins
+#define OLED_SCL 15   // GPIO 15
+#define OLED_SDA  4   // GPIO  4
+#define OLED_RST 16   // GPIO 16
+
+// define the display type that we use
+U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ OLED_SCL, /* data=*/ OLED_SDA, /* reset=*/ OLED_RST);
 
 void do_send(osjob_t* j);
 
@@ -227,10 +239,16 @@ void do_send(osjob_t* j){
         float temperature = bme.readTemperature();
         sprintf(buffer, "Temperature: %10.2f degC Raw: %5d | 0x%04x\r\n", temperature, (int16_t)(temperature), (int16_t)(temperature));
         Serial.print(buffer);
+        u8x8.drawString(0, 2, "Temperature:");
+        sprintf(buffer, "%.2f degC", temperature);
+        u8x8.drawString(0, 3, buffer);
 
         float pressure = bme.readPressure();        
         sprintf(buffer, "Pressure:    %10.2f Pa   Raw: %5d | 0x%04x\r\n", pressure, (uint16_t)(pressure/100), (uint16_t)(pressure/100));
         Serial.print(buffer);
+        u8x8.drawString(0, 5, "Pressure:");
+        sprintf(buffer, "%.2f Pa", pressure);
+        u8x8.drawString(0, 6, buffer);
 
         lpp.reset();
         lpp.addTemperature(3, temperature);
@@ -245,6 +263,12 @@ void do_send(osjob_t* j){
 void setup() {
     Serial.begin(115200);
     Serial.println(F("Starting"));
+
+    // set up the display
+    u8x8.begin();
+    u8x8.setPowerSave(0);
+    u8x8.setFont(u8x8_font_chroma48medium8_r);
+    u8x8.drawString(0, 0, "BME280 Soldier 1");
 
     bool status;
     status = bme.begin(BME280_ADD);
