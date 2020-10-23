@@ -36,6 +36,9 @@
 #include <hal/hal.h>
 #include <SPI.h>
 
+#include <Wire.h>
+#include "Adafruit_BME280.h"
+
 #include "defines.h"
 
 // This EUI must be in little-endian format, so least-significant-byte
@@ -69,6 +72,13 @@ const lmic_pinmap lmic_pins = {
     .rst = 14,
     .dio = {26, 33, 32},
 };
+
+#define I2C_SDA 21
+#define I2C_SCL 22
+#define SEALEVELPRESSURE_HPA (1013.25)
+#define BME280_ADD 0x76
+
+Adafruit_BME280 bme(I2C_SDA, I2C_SCL);
 
 void do_send(osjob_t* j);
 
@@ -215,6 +225,32 @@ void do_send(osjob_t* j){
 void setup() {
     Serial.begin(115200);
     Serial.println(F("Starting"));
+
+    bool status;
+    status = bme.begin(BME280_ADD);
+    if (!status) {
+        Serial.println("Could not find a valid BME280 sensor, check wiring!");
+        while (1);
+    }
+
+    Serial.print("Temperature = ");
+    Serial.print(bme.readTemperature());
+    Serial.println(" ℃");
+
+    Serial.print("Pressure = ");
+
+    Serial.print(bme.readPressure() / 100.0F);
+    Serial.println(" hPa");
+
+    Serial.print("Approx. Altitude = ");
+    Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
+    Serial.println(" m");
+
+    Serial.print("Humidity = ");
+    Serial.print(bme.readHumidity());
+    Serial.println(" %");
+
+    Serial.println();
 
     // LMIC init
     os_init();
