@@ -32,12 +32,17 @@
  *******************************************************************************/
 #include <Arduino.h>
 
+// LoRa
 #include <lmic.h>
 #include <hal/hal.h>
 #include <SPI.h>
 
+// BMP280
 #include <Wire.h>
 #include "Adafruit_BME280.h"
+
+//CayenneLPP
+#include <CayenneLPP.h>
 
 #include "defines.h"
 
@@ -58,7 +63,6 @@ void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 static const u1_t PROGMEM APPKEY[16] = { DEF_APPKEY };
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
-static uint8_t mydata[] = "Hello, world!";
 static osjob_t sendjob;
 
 // Schedule TX every this many seconds (might become longer due to duty
@@ -79,6 +83,8 @@ const lmic_pinmap lmic_pins = {
 #define BME280_ADD 0x76
 
 Adafruit_BME280 bme(I2C_SDA, I2C_SCL);
+
+CayenneLPP lpp(51);
 
 void do_send(osjob_t* j);
 
@@ -216,7 +222,21 @@ void do_send(osjob_t* j){
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
         // Prepare upstream data transmission at the next possible time.
-        LMIC_setTxData2(1, mydata, sizeof(mydata)-1, 0);
+
+        char buffer[255];
+        float temperature = bme.readTemperature();
+        sprintf(buffer, "Temperature: %10.2f degC Raw: %5d | 0x%04x\r\n", temperature, (int16_t)(temperature), (int16_t)(temperature));
+        Serial.print(buffer);
+
+        float pressure = bme.readPressure();        
+        sprintf(buffer, "Pressure:    %10.2f Pa   Raw: %5d | 0x%04x\r\n", pressure, (uint16_t)(pressure/100), (uint16_t)(pressure/100));
+        Serial.print(buffer);
+
+        lpp.reset();
+        lpp.addTemperature(3, temperature);
+        lpp.addBarometricPressure(4, pressure/100);
+
+        LMIC_setTxData2(1, lpp.getBuffer(), lpp.getSize(), 0);
         Serial.println(F("Packet queued"));
     }
     // Next TX is scheduled after TX_COMPLETE event.
@@ -232,25 +252,6 @@ void setup() {
         Serial.println("Could not find a valid BME280 sensor, check wiring!");
         while (1);
     }
-
-    Serial.print("Temperature = ");
-    Serial.print(bme.readTemperature());
-    Serial.println(" ℃");
-
-    Serial.print("Pressure = ");
-
-    Serial.print(bme.readPressure() / 100.0F);
-    Serial.println(" hPa");
-
-    Serial.print("Approx. Altitude = ");
-    Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
-    Serial.println(" m");
-
-    Serial.print("Humidity = ");
-    Serial.print(bme.readHumidity());
-    Serial.println(" %");
-
-    Serial.println();
 
     // LMIC init
     os_init();
