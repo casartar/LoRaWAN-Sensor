@@ -175,11 +175,26 @@ void onEvent (ev_t ev) {
         case EV_TXCOMPLETE:
             Serial.println(F("EV_TXCOMPLETE (includes waiting for RX windows)"));
             if (LMIC.txrxFlags & TXRX_ACK)
-              Serial.println(F("Received ack"));
+                Serial.println(F("Received ack"));
             if (LMIC.dataLen) {
-              Serial.print(F("Received "));
-              Serial.print(LMIC.dataLen);
-              Serial.println(F(" bytes of payload"));
+                Serial.print(F("Received "));
+                Serial.print(LMIC.dataLen);
+                Serial.println(F(" bytes of payload"));
+                for (uint8_t i = 0; i < LMIC.dataLen; i++) {
+                    char buffer[6];
+                    sprintf(buffer, "0x%02x ", LMIC.frame[LMIC.dataBeg + i]);
+                    Serial.print(buffer);
+                }
+                Serial.println("");
+                if (LMIC.frame[LMIC.dataBeg + 0] == 0x03
+                 && LMIC.frame[LMIC.dataBeg + 1] == 0x00) {
+                    if (LMIC.frame[LMIC.dataBeg + 2] == 0x64) {
+                        digitalWrite(17, HIGH);
+                    }
+                    else if (LMIC.frame[LMIC.dataBeg + 2] == 0x00) {
+                        digitalWrite(17, LOW);
+                    }
+                }
             }
             // Schedule next transmission
             os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
@@ -251,8 +266,9 @@ void do_send(osjob_t* j){
         u8x8.drawString(0, 6, buffer);
 
         lpp.reset();
-        lpp.addTemperature(3, temperature);
-        lpp.addBarometricPressure(4, pressure/100);
+        lpp.addTemperature(1, temperature);
+        lpp.addBarometricPressure(2, pressure/100);
+        lpp.addDigitalOutput(3, 1);
 
         LMIC_setTxData2(1, lpp.getBuffer(), lpp.getSize(), 0);
         Serial.println(F("Packet queued"));
@@ -263,6 +279,9 @@ void do_send(osjob_t* j){
 void setup() {
     Serial.begin(115200);
     Serial.println(F("Starting"));
+
+    // Set LED to output
+    pinMode(17, OUTPUT);
 
     // set up the display
     u8x8.begin();
