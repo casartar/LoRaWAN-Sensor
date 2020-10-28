@@ -1,2 +1,2 @@
-[TTN](Documentation/TTN)
-[Cayenne](Documentation/Cayenne)
+[TTN](Documentation/TTN.md)
+[Cayenne](Documentation/Cayenne.md)
