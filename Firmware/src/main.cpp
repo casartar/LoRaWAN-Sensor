@@ -78,7 +78,7 @@ const lmic_pinmap lmic_pins = {
     .nss = 18,
     .rxtx = LMIC_UNUSED_PIN,
     .rst = 14,
-    .dio = {26, 33, 32},
+    .dio = {26, 35, 34},
 };
 
 #define I2C_SDA 21
