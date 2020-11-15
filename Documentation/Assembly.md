@@ -2,17 +2,17 @@
 
 1. Alle Bauteile
 
-1.1 BME 280 mit Stiftleiste
-1.2 Baseplate
-1.3 WIFI LoRa 32 (V2) mit Stiftleisten
-1.4 Pigtail
-1.5 Antenne
-1.6 LED
-1.7 2x Unterlegscheiben M2
-1.8 2x Schrauben M2 8 mm
-1.9 1x Mutter M3
-1.10 1x Schraube M3 8 mm
-1.11 6x Jumper Kabel Female-Female
+* BME 280 mit Stiftleiste
+*  Baseplate
+*  WIFI LoRa 32 (V2) mit Stiftleisten
+*  Pigtail
+*  Antenne
+*  LED
+*  2x Unterlegscheiben M2
+*  2x Schrauben M2 8 mm
+*  1x Mutter M3
+*  1x Schraube M3 8 mm
+*  6x Jumper Kabel Female-Female
 
 ![ASSEMBLY](Pictures_Assembly/IMG_20201108_200519.jpg)
 
