@@ -1,4 +1,4 @@
-# Das LoRaWAN Sensor Projekt vom ZTL.space (casartar, Ekki)
+# Das LoRaWAN Sensor Projekt vom ZTL.space
 
 [TTN](Documentation/TTN.md)
 
